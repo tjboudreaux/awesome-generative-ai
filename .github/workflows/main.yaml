@@ -1,0 +1,43 @@
+name: Hourly Twitter Likes Scraper
+
+on:
+  schedule:
+    - cron: "0 * * * *" # Run the action every hour
+
+jobs:
+  scrape_twitter_likes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+
+      - name: Install dependencies
+        run: |
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          poetry install
+
+      - name: Run Twitter Likes Scraper
+        env:
+          API_KEY: ${{ secrets.API_KEY }}
+          API_SECRET_KEY: ${{ secrets.API_SECRET_KEY }}
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          ACCESS_SECRET_TOKEN: ${{ secrets.ACCESS_SECRET_TOKEN }}
+          TWITTER_USERNAME: ${{ secrets.TWITTER_USERNAME }}
+        run: poetry run python main.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "github-action@example.com"
+          git add README.md
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update AI-related Twitter likes" && git push)
